@@ -1,11 +1,9 @@
-name: epi2melabs-nf-template-workflow
+name: epi2melabs-nf-demultiplex-workflow
 channels:
     - epi2melabs
-    - bioconda
     - conda-forge
     - defaults
 dependencies:
-    - python==3.6.*
-    - aplanat >=0.3.5
-    - pysam
-    - fastcat
+    - python
+    - aplanat
+    - barcoder

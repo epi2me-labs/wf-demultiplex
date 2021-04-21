@@ -1,24 +1,14 @@
 #!/usr/bin/env nextflow
 
-// Developer notes
-// 
-// This template workflow provides a basic structure to copy in order
-// to create a new workflow. Current recommended pratices are:
-//     i) create a simple command-line interface.
-//    ii) include an abstract workflow scope named "pipeline" to be used
-//        in a module fashion.
-//   iii) a second concreate, but anonymous, workflow scope to be used
-//        as an entry point when using this workflow in isolation.
-
 nextflow.enable.dsl = 2
 
 
 def helpMessage(){
     log.info """
-Workflow template'
+Demultiplexing workflow'
 
 Usage:
-    nextflow run epi2melabs/wf-template [options]
+    nextflow run epi2melabs/wf-demultiplex [options]
 
 Script Options:
     --fastq        DIR     Path to directory containing FASTQ files (required)
@@ -27,30 +17,32 @@ Script Options:
 }
 
 
-process summariseReads {
-    // concatenate fastq and fastq.gz in a dir
+process demultiplexReads {
+    // demultiplex .fastq in a directory
 
-    label "pysam"
-    cpus 1
+    label "barcoder"
+    cpus params.threads
     input:
         file "input"
     output:
-        file "seqs.txt"
+        path "output/barcode*", emit: barcodes
+        path "output/unclassified", emit: unclassified
+        path "output/barcoding_summary.txt", emit: summary
     shell:
     """
-    fastcat -r seqs.txt input/*.fastq* > /dev/null
+    guppy_barcoder -i $input -s output -t $task.cpus
     """
 }
 
 
 process makeReport {
-    label "pysam"
+    label "barcoder"
     input:
-        file "seqs.txt"
+        file "barcoding_summary.txt"
     output:
-        file "wf-template-report.html"
+        file "wf-demultiplex-report.html"
     """
-    report.py wf-template-report.html seqs.txt
+    touch wf-demultiplex-report.html
     """
 }
 
@@ -60,7 +52,7 @@ process makeReport {
 // decoupling the publish from the process steps.
 process output {
     // publish inputs to output directory
-    label "pysam"
+    label "barcoder"
     publishDir "${params.out_dir}", mode: 'copy', pattern: "*"
     input:
         file fname
@@ -77,10 +69,10 @@ workflow pipeline {
     take:
         reads
     main:
-        summary = summariseReads(reads)
-        report = makeReport(summary)
+        data = demultiplexReads(reads)
+        report = makeReport(data.summary)
     emit:
-        summary.concat(report)
+        report.concat(data.barcodes, data.unclassified, data.summary)
 }
 
 // entrypoint workflow
