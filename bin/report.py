@@ -3,38 +3,20 @@
 
 import argparse
 
-from aplanat.components import fastcat
-from aplanat.report import HTMLReport
+from aplanat.report import WFReport
 
 
 def main():
     """Run the entry point."""
     parser = argparse.ArgumentParser()
     parser.add_argument("report", help="Report output file")
-    parser.add_argument("summaries", nargs='+', help="Read summary file.")
+    parser.add_argument("summary", help="Guppy demultiplexing summary file.")
     args = parser.parse_args()
 
-    report = HTMLReport(
-        "Workflow Template Sequencing report",
-        ("Results generated through the wf-template nextflow "
-            "workflow by Oxford Nanopore Technologies"))
+    report = WFReport(
+        "Read Demultiplexing Report", "wf-demultiplex")
 
-    report.add_section(
-        section=fastcat.full_report(args.summaries))
-
-    report.markdown('''
-### About
-
-**Oxford Nanopore Technologies products are not intended for use for health
-assessment or to diagnose, treat, mitigate, cure or prevent any disease or
-condition.**
-
-This report was produced using the
-[epi2me-labs/wf-template](https://github.com/epi2me-labs/wf-template).  The
-workflow can be run using `nextflow epi2me-labs/wf-template --help`
-
----
-''')
+    report.add_section()
 
     # write report
     report.write(args.report)
