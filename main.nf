@@ -42,7 +42,7 @@ process makeReport {
     output:
         file "wf-demultiplex-report.html"
     """
-    touch wf-demultiplex-report.html
+    report.py wf-demultiplex-report.html barcoding_summary.txt
     """
 }
 

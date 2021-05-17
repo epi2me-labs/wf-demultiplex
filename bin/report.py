@@ -3,7 +3,18 @@
 
 import argparse
 
+from aplanat import bars
+from aplanat.util import Colors
 from aplanat.report import WFReport
+import pandas as pd
+
+
+def read_files(summaries, sep='\t'):
+    """Read a set of files and join to single dataframe."""
+    dfs = list()
+    for fname in sorted(summaries):
+        dfs.append(pd.read_csv(fname, sep=sep))
+    return pd.concat(dfs)
 
 
 def main():
@@ -16,7 +27,21 @@ def main():
     report = WFReport(
         "Read Demultiplexing Report", "wf-demultiplex")
 
-    report.add_section()
+    section = report.add_section()
+    section.markdown('''
+### Summary
+The chart below depicts simply the number of reads found for each barcode.
+''')
+    df = read_files([args.summary])
+    counts = df.value_counts(subset=['barcode_arrangement']) \
+        .reset_index().sort_values(by=['barcode_arrangement']) \
+        .rename(columns={0:'count'})
+    plot = bars.simple_bar(
+        counts['barcode_arrangement'].astype(str), counts['count'],
+        colors=[Colors.cerulean]*len(counts),
+        title='Number of reads per barcode.')
+    plot.xaxis.major_label_orientation = 3.14/2
+    section.plot(plot)
 
     # write report
     report.write(args.report)
