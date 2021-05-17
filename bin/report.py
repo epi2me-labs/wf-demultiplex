@@ -4,8 +4,8 @@
 import argparse
 
 from aplanat import bars
-from aplanat.util import Colors
 from aplanat.report import WFReport
+from aplanat.util import Colors
 import pandas as pd
 
 
@@ -35,7 +35,7 @@ The chart below depicts simply the number of reads found for each barcode.
     df = read_files([args.summary])
     counts = df.value_counts(subset=['barcode_arrangement']) \
         .reset_index().sort_values(by=['barcode_arrangement']) \
-        .rename(columns={0:'count'})
+        .rename(columns={0: 'count'})
     plot = bars.simple_bar(
         counts['barcode_arrangement'].astype(str), counts['count'],
         colors=[Colors.cerulean]*len(counts),
