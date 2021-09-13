@@ -13,6 +13,7 @@ Usage:
 Script Options:
     --fastq        DIR     Path to directory containing FASTQ files (required)
     --out_dir      DIR     Path for output (default: $params.out_dir)
+    --report_name  STR     Optional report suffix (default: $params.report_name)
 """
 }
 
@@ -40,9 +41,12 @@ process makeReport {
     input:
         file "barcoding_summary.txt"
     output:
-        file "wf-demultiplex-report.html"
+        file "wf-demultiplex-*.html"
+    script:
+        report_name = "wf-demultiplex-" + params.report_name + '.html'
+
     """
-    report.py wf-demultiplex-report.html barcoding_summary.txt
+    report.py $report_name barcoding_summary.txt
     """
 }
 
