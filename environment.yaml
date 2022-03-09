@@ -1,9 +1,11 @@
 name: epi2melabs-nf-demultiplex-workflow
 channels:
     - epi2melabs
+    - bioconda
     - conda-forge
     - defaults
 dependencies:
     - python
     - aplanat
     - barcoder
+    - epi2melabs

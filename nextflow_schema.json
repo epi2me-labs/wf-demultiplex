@@ -1,0 +1,107 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/./master/nextflow_schema.json",
+    "title": "epi2me-labs/wf-demultiplex",
+    "description": "Provides an easy way to demultiplex Oxford Nanopore reads, outputs fastq  files in to barcoded directories.",
+    "url": "https://github.com/epi2me-labs/wf-demultiplex",
+    "type": "object",
+    "definitions": {
+        "input_output_options": {
+            "title": "Input/output options",
+            "type": "object",
+            "fa_icon": "fas fa-terminal",
+            "description": "Define where the pipeline should find input data and save output data.",
+            "properties": {
+                "fastq": {
+                    "type": "string",
+                    "description": "Path to directory containing on or more FASTQ files in `.fastq(.gz)` format to be demultiplexed.",
+                    "help_text": "All input fastq files to be demultiplexed should be in one directory.",
+                    "format": "path"
+                },
+                "out_dir": {
+                    "type": "string",
+                    "default": "output",
+                    "description": "Path for output",
+                    "format": "path"
+                }
+            },
+            "required": [
+                "fastq"
+            ]
+        },
+        "meta_data": {
+            "title": "Meta data",
+            "type": "object",
+            "fa_icon": "fas fa-university",
+            "description": "",
+            "help_text": "",
+            "properties": {
+                "report_name": {
+                    "type": "string",
+                    "default": "report",
+                    "description": "Optional report suffix"
+                },
+                "wfversion": {
+                    "type": "string",
+                    "default": "v0.1.1"
+                }
+            }
+        },
+        "advanced_options": {
+            "title": "Advanced options",
+            "type": "object",
+            "fa_icon": "fab fa-acquisitions-incorporated",
+            "description": "",
+            "help_text": "",
+            "properties": {
+                 "disable_ping": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable to prevent sending a workflow ping."
+                },
+                "aws_image_prefix": {
+                    "type": "string",
+                    "hidden": true
+                },
+                "threads": {
+                    "type": "integer",
+                    "default": 4,
+                    "description": "Number of threads to use per process."
+                },
+                "aws_queue": {
+                    "type": "string",
+                    "hidden": true
+                }
+            }
+        },
+        "generic_options": {
+            "title": "Generic options",
+            "type": "object",
+            "fa_icon": "fas fa-file-import",
+            "description": "",
+            "help_text": "",
+            "properties": {
+                "help": {
+                    "type": "boolean",
+                    "description": "Display help text.",
+                    "fa_icon": "fas fa-question-circle",
+                    "hidden": true
+                }
+            }
+        }
+    },
+    "allOf": [
+        {
+            "$ref": "#/definitions/input_output_options"
+        },
+        {
+            "$ref": "#/definitions/meta_data"
+        },
+        {
+            "$ref": "#/definitions/advanced_options"
+        },
+        {
+            "$ref": "#/definitions/generic_options"
+        }
+    ]
+}
