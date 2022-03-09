@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 ### Added
 - Option to add suffix to HTML report name.
+- nf core schema.
 
 ## [v0.1.1]
 ### Changed

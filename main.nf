@@ -2,20 +2,9 @@
 
 nextflow.enable.dsl = 2
 
+import groovy.json.JsonBuilder
 
-def helpMessage(){
-    log.info """
-Demultiplexing workflow'
-
-Usage:
-    nextflow run epi2melabs/wf-demultiplex [options]
-
-Script Options:
-    --fastq        DIR     Path to directory containing FASTQ files (required)
-    --out_dir      DIR     Path for output (default: $params.out_dir)
-    --report_name  STR     Optional report suffix (default: $params.report_name)
-"""
-}
+include { start_ping; end_ping } from './lib/ping'
 
 
 process demultiplexReads {
@@ -40,13 +29,41 @@ process makeReport {
     label "barcoder"
     input:
         file "barcoding_summary.txt"
+        path "versions/*"
+        path "params.json"
     output:
         file "wf-demultiplex-*.html"
     script:
         report_name = "wf-demultiplex-" + params.report_name + '.html'
 
     """
-    report.py $report_name barcoding_summary.txt
+    report.py $report_name barcoding_summary.txt --versions versions --params params.json
+
+    """
+}
+
+process getVersions {
+    label "barcoder"
+    cpus 1
+    output:
+        path "versions.txt"
+    script:
+    """
+    python --version | sed 's/^/python,/' >> versions.txt
+    """
+}
+
+
+process getParams {
+    label "barcoder"
+    cpus 1
+    output:
+        path "params.json"
+    script:
+        def paramsJSON = new JsonBuilder(params).toPrettyString()
+    """
+    # Output nextflow params object to JSON
+    echo '$paramsJSON' > params.json
     """
 }
 
@@ -74,14 +91,18 @@ workflow pipeline {
         reads
     main:
         data = demultiplexReads(reads)
-        report = makeReport(data.summary)
+        software_versions = getVersions()
+        workflow_params = getParams()
+        report = makeReport(data.summary, software_versions.collect(), workflow_params)
     emit:
-        report.concat(data.barcodes, data.unclassified, data.summary)
+        results = report.concat(data.barcodes, data.unclassified, data.summary)
+        telemetry = workflow_params
 }
 
 // entrypoint workflow
+WorkflowMain.initialise(workflow, params, log)
 workflow {
-
+    start_ping()
     if (params.help) {
         helpMessage()
         exit 1
@@ -97,9 +118,10 @@ workflow {
     reads = file("$params.fastq/*.fastq*", type: 'file', maxdepth: 1)
     if (reads) {
         reads = Channel.fromPath(params.fastq, type: 'dir', checkIfExists: true)
-        results = pipeline(reads)
-        output(results)
+        pipeline(reads)
+        output(pipeline.out.results)
     } else {
         println("No .fastq(.gz) files found under `${params.fastq}`.")
     }
+    end_ping(pipeline.out.telemetry)
 }

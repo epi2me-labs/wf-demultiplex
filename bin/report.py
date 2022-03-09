@@ -4,6 +4,7 @@
 import argparse
 
 from aplanat import bars
+from aplanat.components import simple as scomponents
 from aplanat.report import WFReport
 from aplanat.util import Colors
 import pandas as pd
@@ -22,6 +23,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("report", help="Report output file")
     parser.add_argument("summary", help="Guppy demultiplexing summary file.")
+    parser.add_argument(
+        "--versions", required=True,
+        help="directory containing CSVs containing name,version.")
+    parser.add_argument(
+        "--params", default=None, required=True,
+        help="A JSON file containing the workflow parameter key/values")
+
     args = parser.parse_args()
 
     report = WFReport(
@@ -42,6 +50,10 @@ The chart below depicts simply the number of reads found for each barcode.
         title='Number of reads per barcode.')
     plot.xaxis.major_label_orientation = 3.14/2
     section.plot(plot)
+    report.add_section(
+        section=scomponents.version_table(args.versions))
+    report.add_section(
+        section=scomponents.params_table(args.params))
 
     # write report
     report.write(args.report)
